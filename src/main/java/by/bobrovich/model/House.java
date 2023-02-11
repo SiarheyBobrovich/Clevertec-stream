@@ -1,4 +1,4 @@
-package by.sologub.model;
+package by.bobrovich.model;
 
 import java.util.List;
 

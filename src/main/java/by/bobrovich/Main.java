@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -27,7 +28,7 @@ public class Main {
 //        task9();
 //        task10();
 //        task11();
-        task12();
+//        task12();
         task13();
         task14();
         task15();
@@ -231,25 +232,18 @@ public class Main {
     //приоритета по военной категории.
     //Однако взять на обучение академия может только 200 человек.
     //Вывести их в консоль.
+    /*
+        id: 14, 44, 137, 177, 182, 274, 285, 311, 366, 396, 473, 521, 535, 555, 630, 665, 743, 888, 917, 951, 31, 130, 141, 247, 254, 263, 336, 341, 423, 435, 578, 590, 612, 617, 619, 664, 759, 807, 809, 815, 830, 842, 866, 889, 891, 902, 953, 50, 77, 120, 264, 276, 318, 432, 434, 463, 474, 504, 567, 628, 716, 739, 747, 753, 777, 885, 915, 937, 939
+     */
     private static void task12() throws IOException {
         List<Person> people = Util.getPersons();
         int currentYear = LocalDate.now().getYear();
-        Map<Integer, List<Person>> personMap = new TreeMap<>(Map.of(
-                1, new ArrayList<>(),
-                2, new ArrayList<>(),
-                3, new ArrayList<>()));
-
 
         people.stream()
                 .filter(p -> "Male".equals(p.getGender()))
                 .filter(p -> currentYear - p.getDateOfBirth().getYear() >= 18)
                 .filter(p -> currentYear - p.getDateOfBirth().getYear() < 27)
-                .forEach(p -> personMap.get(p.getRecruitmentGroup()).add(p));
-
-        personMap.entrySet()
-                .stream()
-                .flatMap(p -> p.getValue().stream())
-                .limit(200)
+                .sorted(Comparator.comparingInt(Person::getRecruitmentGroup))
                 .forEach(System.out::println);
     }
 
@@ -261,8 +255,21 @@ public class Main {
     //мест в эвакуационном транспорте только 500.
     //Вывести всех людей попадающих в первый этап эвакуации в порядке приоритета (в консоль).
     private static void task13() throws IOException {
-        List<House> houses = Util.getHouses();
-        //        Продолжить...
+        final List<House> houses = Util.getHouses();
+        final LocalDate now = LocalDate.now();
+        final LocalDate years18 = now.minusYears(18);
+        final LocalDate years63 = now.minusYears(63).minusDays(1);
+        final Predicate<Person> isLessThen18 = (p) -> p.getDateOfBirth().isAfter(years18);
+        final Predicate<Person> isMoreThen63 = (p) -> p.getDateOfBirth().isBefore(years63);
+
+        houses.stream()
+                .flatMap(house -> house.getPersonList().stream()
+                                .map(p -> Map.entry("Hospital".equals(house.getBuildingType()) ? 1 :
+                                        isLessThen18.or(isMoreThen63).test(p) ? 2 : 3, p)))
+                .sorted(Map.Entry.comparingByKey())
+                .limit(500)
+                .map(Map.Entry::getValue)
+                .forEach(System.out::println);
     }
 
     private static void task14() throws IOException {

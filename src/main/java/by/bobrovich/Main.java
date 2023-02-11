@@ -1,99 +1,265 @@
-package by.sologub;
+package by.bobrovich;
 
-import by.sologub.model.Animal;
-import by.sologub.model.Car;
-import by.sologub.model.Flower;
-import by.sologub.model.House;
-import by.sologub.model.Person;
-import by.sologub.util.Util;
+import by.bobrovich.model.Animal;
+import by.bobrovich.model.Car;
+import by.bobrovich.model.Flower;
+import by.bobrovich.model.House;
+import by.bobrovich.model.Person;
+import by.bobrovich.util.Util;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Stream;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        task1();
-        task2();
-        task3();
-        task4();
-        task5();
-        task6();
-        task7();
-        task8();
-        task9();
-        task10();
-        task11();
+//        task1();
+//        task2();
+//        task3();
+//        task4();
+//        task5();
+//        task6();
+//        task7();
+//        task8();
+//        task9();
+//        task10();
+//        task11();
         task12();
         task13();
         task14();
         task15();
     }
 
+    /*
+        Из представленных животных отобрать все молодые особи
+        от 10 до 20 лет и отсортировать по возрасту (по возрастанию)
+        далее - распределить по 7 на каждый зоопарк.
+        Зоопарков неограниченное кол-во а вы - директор 3-го по счёту зоопарка.
+        Полученных животных вывести в консоль.
+     */
     private static void task1() throws IOException {
+        int countAnimalInZoo = 7;
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+                animals.stream()
+                        .filter(animal -> animal.getAge() >= 10)
+                        .filter(animal -> animal.getAge() < 20)
+                        .sorted(Comparator.comparingInt(Animal::getAge))
+                        .skip(2 * countAnimalInZoo)
+                        .limit(countAnimalInZoo)
+                        .forEach(System.out::println);
     }
 
+    /*
+        Отобрать всех животных из Японии (Japanese) и
+        записать породу UPPER_CASE в если пол Female
+        преобразовать к строкам породы животных и вывести в консоль
+     */
     private static void task2() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+        animals.stream()
+                .filter(animal -> "Japanese".equals(animal.getOrigin()))
+                .map(a -> "Female".equals(a.getGender()) ? a.getGender().toUpperCase() : a.getGender())
+                .forEach(System.out::println);
 
     }
 
+    //Отобрать всех животных старше 30 лет
+    //и вывести все страны происхождения без дубликатов начинающиеся на "A"
+    /*
+        Azeri
+        Aymara
+        Afrikaans
+        Arabic
+        Armenian
+        Amharic
+        Assamese
+        Albanian
+     */
     private static void task3() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+        animals.stream()
+                .filter(animal -> animal.getAge() > 30)
+                .map(Animal::getOrigin)
+                .filter(a -> a.startsWith("A"))
+                .distinct()
+                .forEach(System.out::println);
     }
 
+    //Подсчитать количество всех животных пола = Female.
+    //Вывести в консоль
+    /*
+        476
+     */
     private static void task4() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
 
+        long countFemale = animals.stream()
+                .filter(animal -> "Female".equals(animal.getGender()))
+                .count();
+        System.out.println(countFemale);
     }
 
+    //Взять всех животных возрастом 20 - 30 лет.
+    //Есть ли среди нах хоть один из страны Венгрия (Hungarian)?
+    //Ответ вывести в консоль
+    /*
+        true
+     */
     private static void task5() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+        boolean isExistFromHungarian = animals.stream()
+                .filter(animal -> animal.getAge() >= 20 && animal.getAge() <= 30)
+                .anyMatch(animal -> "Hungarian".equals(animal.getOrigin()));
+        System.out.println(isExistFromHungarian);
     }
 
+    //Взять всех животных.
+    //Все ли они пола Male и Female ?
+    //Ответ вывести в консоль
+    /*
+        false
+     */
     private static void task6() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+        boolean isAllMaleOrFemale = animals.stream()
+                .allMatch(a -> "Male".equals(a.getGender()) || "Female".equals(a.getGender()));
+        System.out.println(isAllMaleOrFemale);
     }
 
+    //Взять всех животных.
+    //Узнать что ни одно из них не имеет страну происхождения Oceania.
+    //Ответ вывести в консоль
+    /*
+        true
+     */
     private static void task7() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+        boolean isNoneMatchOceania = animals.stream()
+                .noneMatch(animal -> "Oceania".equals(animal.getOrigin()));
+        System.out.println(isNoneMatchOceania);
     }
 
+    //Взять всех животных.
+    //Отсортировать их породу в стандартном порядке и
+    //взять первые 100.
+    //Вывести в консоль возраст самого старого животного
+    /*
+        48
+     */
     private static void task8() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+        int maxAge = animals.stream()
+                .sorted(Comparator.comparing(Animal::getBread))
+                .limit(100)
+                .mapToInt(Animal::getAge)
+                .max()
+                .orElse(0);
+        System.out.println(maxAge);
     }
 
+    //Взять всех животных.
+    //Преобразовать их в породы,
+    //а породы в []char
+    //Вывести в консоль длину самого короткого массива
+    /*
+        40
+     */
     private static void task9() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+        int length = 0;
+//        long start = System.currentTimeMillis();
+
+//        for (int i = 0; i < 1_000_000; i++) {
+            length = animals.stream()
+                    .map(Animal::getBread)
+                    .mapToInt(String::length)
+                    .max()
+                    .orElse(0);
+//                    .map(String::toCharArray)
+//                    .max(Comparator.comparingInt(String::length))
+//                    .orElse("")
+//                    .length();
+//                    .mapToInt(c -> c.length)
+//                    .max()
+//                    .orElse(0);
+//        }
+//        System.out.println(System.currentTimeMillis() - start);
+        System.out.println(length);
     }
 
+    //Взять всех животных.
+    //Подсчитать суммарный возраст всех животных.
+    //Вывести результат в консоль
+    /*
+        25329
+     */
     private static void task10() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+        int sumAge = animals.stream()
+                .mapToInt(Animal::getAge)
+                .sum();
+        System.out.println(sumAge);
     }
 
+    //Взять всех животных.
+    //Подсчитать средний возраст всех животных из индонезии (Indonesian).
+    //Вывести результат в консоль
+    /*
+        25.8
+     */
     private static void task11() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+        double indonesianAvgAge = animals.stream()
+                .filter(a -> "Indonesian".equals(a.getOrigin()))
+                .mapToInt(Animal::getAge)
+                .average()
+                .orElse(0.0);
+
+        System.out.println(indonesianAvgAge);
     }
 
+    //Во Французский легион принимают людей со всего света, но есть
+    //отбор по полу (только мужчины)
+    //возраст от 18 до 27 лет.
+    //Преимущество отдаётся людям военной категории 1,
+    //на втором месте - военная категория 2,
+    //и на третьем месте военная категория 3.
+    //Отсортировать всех подходящих кандидатов в порядке их
+    //приоритета по военной категории.
+    //Однако взять на обучение академия может только 200 человек.
+    //Вывести их в консоль.
     private static void task12() throws IOException {
         List<Person> people = Util.getPersons();
-//        Продолжить...
+        int currentYear = LocalDate.now().getYear();
+        Map<Integer, List<Person>> personMap = new TreeMap<>(Map.of(
+                1, new ArrayList<>(),
+                2, new ArrayList<>(),
+                3, new ArrayList<>()));
+
+
+        people.stream()
+                .filter(p -> "Male".equals(p.getGender()))
+                .filter(p -> currentYear - p.getDateOfBirth().getYear() >= 18)
+                .filter(p -> currentYear - p.getDateOfBirth().getYear() < 27)
+                .forEach(p -> personMap.get(p.getRecruitmentGroup()).add(p));
+
+        personMap.entrySet()
+                .stream()
+                .flatMap(p -> p.getValue().stream())
+                .limit(200)
+                .forEach(System.out::println);
     }
 
+    //Надвигается цунами и в районе эвакуации требуется
+    //в первую очередь обойти дома и эвакуировать больных и раненых (из Hospital),
+    //во вторую очередь детей и стариков (до 18 и пенсионного возраста)
+    //а после всех остальных.
+    //В первый этап эвакуации
+    //мест в эвакуационном транспорте только 500.
+    //Вывести всех людей попадающих в первый этап эвакуации в порядке приоритета (в консоль).
     private static void task13() throws IOException {
         List<House> houses = Util.getHouses();
         //        Продолжить...

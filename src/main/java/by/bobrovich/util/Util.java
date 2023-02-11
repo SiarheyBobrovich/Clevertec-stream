@@ -1,10 +1,10 @@
-package by.sologub.util;
+package by.bobrovich.util;
 
-import by.sologub.model.Animal;
-import by.sologub.model.Car;
-import by.sologub.model.Flower;
-import by.sologub.model.House;
-import by.sologub.model.Person;
+import by.bobrovich.model.Animal;
+import by.bobrovich.model.Car;
+import by.bobrovich.model.Flower;
+import by.bobrovich.model.House;
+import by.bobrovich.model.Person;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Locale;
 
 public class Util {
-    public static final String animalsDataFileName = "src\\main\\resources\\animals.json";
-    public static final String recruitsDataFileName = "src\\main\\resources\\recruits.json";
-    public static final String carsDataFileName = "src\\main\\resources\\cars.json";
-    public static final String flowersDataFileName = "src\\main\\resources\\flowers.json";
+    public static final String animalsDataFileName = "src/main/resources/animals.json";
+    public static final String recruitsDataFileName = "src/main/resources/recruits.json";
+    public static final String carsDataFileName = "src/main/resources/cars.json";
+    public static final String flowersDataFileName = "src/main/resources/flowers.json";
     public static final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 
     public static List<Animal> getAnimals() throws IOException {

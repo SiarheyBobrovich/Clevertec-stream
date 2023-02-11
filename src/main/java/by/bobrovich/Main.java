@@ -254,18 +254,36 @@ public class Main {
     //В первый этап эвакуации
     //мест в эвакуационном транспорте только 500.
     //Вывести всех людей попадающих в первый этап эвакуации в порядке приоритета (в консоль).
+//    private static void task13() throws IOException {
+//        final List<House> houses = Util.getHouses();
+//        final LocalDate now = LocalDate.now();
+//        final LocalDate years18 = now.minusYears(18);
+//        final LocalDate years63 = now.minusYears(63).minusDays(1);
+//        final Predicate<Person> isLessThen18 = (p) -> p.getDateOfBirth().isAfter(years18);
+//        final Predicate<Person> isMoreThen63 = (p) -> p.getDateOfBirth().isBefore(years63);
+//
+//        houses.stream()
+//                .flatMap(house -> house.getPersonList().stream()
+//                                .map(p -> Map.entry("Hospital".equals(house.getBuildingType()) ? 1 :
+//                                        isLessThen18.or(isMoreThen63).test(p) ? 2 : 3, p)))
+//                .sorted(Map.Entry.comparingByKey())
+//                .limit(500)
+//                .map(Map.Entry::getValue)
+//                .forEach(System.out::println);
+//    }
+
     private static void task13() throws IOException {
         final List<House> houses = Util.getHouses();
         final LocalDate now = LocalDate.now();
         final LocalDate years18 = now.minusYears(18);
-        final LocalDate years63 = now.minusYears(63).minusDays(1);
+        final LocalDate years63 = now.minusYears(63).plusDays(1);
         final Predicate<Person> isLessThen18 = (p) -> p.getDateOfBirth().isAfter(years18);
         final Predicate<Person> isMoreThen63 = (p) -> p.getDateOfBirth().isBefore(years63);
 
         houses.stream()
                 .flatMap(house -> house.getPersonList().stream()
-                                .map(p -> Map.entry("Hospital".equals(house.getBuildingType()) ? 1 :
-                                        isLessThen18.or(isMoreThen63).test(p) ? 2 : 3, p)))
+                        .map(p -> Map.entry("Hospital".equals(house.getBuildingType()) ? 1 :
+                                isLessThen18.or(isMoreThen63).test(p) ? 2 : 3, p)))
                 .sorted(Map.Entry.comparingByKey())
                 .limit(500)
                 .map(Map.Entry::getValue)

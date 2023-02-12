@@ -8,12 +8,11 @@ import by.bobrovich.model.Person;
 import by.bobrovich.util.Util;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -29,7 +28,7 @@ public class Main {
 //        task10();
 //        task11();
 //        task12();
-        task13();
+//        task13();
         task14();
         task15();
     }
@@ -276,14 +275,17 @@ public class Main {
         final List<House> houses = Util.getHouses();
         final LocalDate now = LocalDate.now();
         final LocalDate years18 = now.minusYears(18);
-        final LocalDate years63 = now.minusYears(63).plusDays(1);
+        final LocalDate malePensionYear = now.minusYears(63).plusDays(1);
+        final LocalDate femalePensionYear = now.minusYears(58).plusDays(1);
         final Predicate<Person> isLessThen18 = (p) -> p.getDateOfBirth().isAfter(years18);
-        final Predicate<Person> isMoreThen63 = (p) -> p.getDateOfBirth().isBefore(years63);
+        final Predicate<Person> isMalePensioner = (p) -> "Male".equals(p.getGender()) && p.getDateOfBirth().isBefore(malePensionYear);
+        final Predicate<Person> isFemalePension = (p) -> "Female".equals(p.getGender()) && p.getDateOfBirth().isBefore(femalePensionYear);
+
 
         houses.stream()
                 .flatMap(house -> house.getPersonList().stream()
                         .map(p -> Map.entry("Hospital".equals(house.getBuildingType()) ? 1 :
-                                isLessThen18.or(isMoreThen63).test(p) ? 2 : 3, p)))
+                                isLessThen18.or(isMalePensioner).or(isFemalePension).test(p) ? 2 : 3, p)))
                 .sorted(Map.Entry.comparingByKey())
                 .limit(500)
                 .map(Map.Entry::getValue)
@@ -292,7 +294,52 @@ public class Main {
 
     private static void task14() throws IOException {
         List<Car> cars = Util.getCars();
-        //        Продолжить...
+        final Predicate<Car> turkmenistanCarPredicate = (c) -> "Jaguar".equals(c.getCarMake()) || "White".equals(c.getColor());
+        final Predicate<Car> uzbekistanCarPredicate = (c) -> c.getMass() < 1500 && ("BMW".equals(c.getCarMake()) || "Lexus".equals(c.getCarMake()) || "Chrysler".equals(c.getCarMake()) || "Toyota".equals(c.getCarMake()));
+        final Predicate<Car> kazahstanCarPredicate = (c) -> "GMC".equals(c.getCarMake()) || "Dodge".equals(c.getCarMake()) || ("Red".equals(c.getColor()) && c.getMass() > 4000);
+        final Predicate<Car> kurgustanCarPredicate = (c) -> "Civic".equals(c.getCarModel()) || "Cherokee".equals(c.getCarModel()) || c.getReleaseYear() < 1982;
+        final Predicate<Car> russianCarPredicate = (c) -> !("Yellow".equals(c.getColor()) || "Red".equals(c.getColor()) || "Green".equals(c.getColor()) || "Blue".equals(c.getColor())) || c.getPrice() > 40000;
+        final Predicate<Car> mongoliaCarPredicate = (c) -> c.getVin() != null && c.getVin().contains("59");
+        final BigDecimal cost = new BigDecimal("0.00714");
+
+        final Map<String, List<Car>> cuntryMap = new LinkedHashMap<>();
+        cuntryMap.put("Туркменистан", new ArrayList<>());
+        cuntryMap.put("Узбекистан", new ArrayList<>());
+        cuntryMap.put("Казахстан", new ArrayList<>());
+        cuntryMap.put("Кыргызстан", new ArrayList<>());
+        cuntryMap.put("Россия", new ArrayList<>());
+        cuntryMap.put("Монголия", new ArrayList<>());
+
+        cars.stream()
+                .peek(car -> {if (turkmenistanCarPredicate.test(car)) cuntryMap.get("Туркменистан").add(car);})
+                .filter(turkmenistanCarPredicate.negate())
+                .peek(car -> {if (uzbekistanCarPredicate.test(car)) cuntryMap.get("Узбекистан").add(car);})
+                .filter(uzbekistanCarPredicate.negate())
+                .peek(car -> {if (kazahstanCarPredicate.test(car)) cuntryMap.get("Казахстан").add(car);})
+                .filter(kazahstanCarPredicate.negate())
+                .peek(car -> {if (kurgustanCarPredicate.test(car)) cuntryMap.get("Кыргызстан").add(car);})
+                .filter(kurgustanCarPredicate.negate())
+                .peek(car -> {if (russianCarPredicate.test(car)) cuntryMap.get("Россия").add(car);})
+                .filter(russianCarPredicate.negate())
+                .forEach(car -> {if (mongoliaCarPredicate.test(car)) cuntryMap.get("Монголия").add(car);});
+
+        List<Integer> countriesCost = new ArrayList<>();
+
+        int allPrice = cuntryMap.entrySet().stream()
+                .peek(entry -> countriesCost.add(entry.getValue().stream()
+                        .mapToInt(Car::getMass)
+                        .sum()))
+                .flatMap(entry -> entry.getValue().stream())
+                .mapToInt(Car::getPrice)
+                .sum();
+
+        countriesCost.stream()
+                .map(BigDecimal::valueOf)
+                .peek(c -> System.out.println(cost.multiply(c)))
+                .reduce(BigDecimal::add)
+                .ifPresent(x -> System.out.println(cost.multiply(x)));
+
+        System.out.println(allPrice);
     }
 
     private static void task15() throws IOException {

@@ -8,9 +8,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -26,6 +30,15 @@ class MainTask14Test {
     private final Predicate<Car> russianCarPredicate = (c) -> !("Yellow".equals(c.getColor()) || "Red".equals(c.getColor()) || "Green".equals(c.getColor()) || "Blue".equals(c.getColor())) || c.getPrice() > 40000;
     private final Predicate<Car> mongoliaCarPredicate = (c) -> c.getVin() != null && c.getVin().contains("59");
 
+    /*
+        221.91834
+        107.63550
+        2255.96868
+        531.29454
+        14922.70710
+        120.80880
+        ALL: 18160.33296
+     */
     //Из перечня автомобилей приходящих на рынок Азии логистическому агентству предстоит
     // отсортировать их в порядке следования
     // 1.Туркменистан -> Все автомобили марки "Jaguar" а так же все авто цвета White идут в первую страну
@@ -36,11 +49,12 @@ class MainTask14Test {
     // 6.Монголия -> Из оставшиеся все автомобили в vin номере которых есть цифра "59" идут в последний шестой эшелон
     //Оставшиеся автомобили отбрасываем, они никуда не идут.
     //Измерить суммарные массы автомобилей всех эшелонов для каждой из стран и
-    //подсчитать сколько для каждой страны
-    //будет стоить транспортные расходы если учесть что на 1 тонну транспорта будет потрачено 7.14 $.
+    //подсчитать сколько для каждой страны будет стоить транспортные расходы если учесть что
+    // на 1 тонну транспорта будет потрачено 7.14 $.
     //Вывести суммарные стоимости в консоль. Вывести общую выручку логистической кампании.
     @Test
-    public void task14() throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void task14() throws IOException, NoSuchMethodException, InvocationTargetException {
+        BigDecimal cost = new BigDecimal("0.00714");
         List<Car> turkmenistanCarsList = getTurkmenistanCarsList();
         List<Car> uzbekistanCarsList = getUzbekistanCarsList();
         List<Car> kazahstanCarsList = getKazahstanCarsList();
@@ -48,30 +62,40 @@ class MainTask14Test {
         List<Car> russianCarsList = getRussianCarsList();
         List<Car> mongoliaCarsList = getMongoliaCarsList();
 
+        ByteArrayOutputStream expected = setOut();
 
-//        cars.stream().map(Car::getColor).distinct().forEach(System.out::println);
+        BigDecimal summaryCost = Stream.of(turkmenistanCarsList, uzbekistanCarsList, kazahstanCarsList, kurgustanCarsList, russianCarsList, mongoliaCarsList)
+                .map(list -> list.stream()
+                        .mapToInt(Car::getMass)
+                        .sum())
+                .map(sum -> cost.multiply(BigDecimal.valueOf(sum)))
+                .peek(System.out::println)
+                .reduce(BigDecimal::add)
+                .orElse(BigDecimal.ZERO);
+        System.out.println(summaryCost);
 
+        int allPrice = Stream.of(turkmenistanCarsList, uzbekistanCarsList, kazahstanCarsList, kurgustanCarsList, russianCarsList, mongoliaCarsList)
+                .flatMap(Collection::stream)
+                .mapToInt(Car::getPrice)
+                .sum();
 
+        System.out.println(allPrice);
 
+        //Original method
 
+        ByteArrayOutputStream actual = setOut();
 
+        Method task14 = Main.class.getDeclaredMethod("task14");
+        task14.setAccessible(true);
+        try {
+            task14.invoke(new Object());
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }finally {
+            System.setOut(out);
+        }
 
-
-
-
-
-//
-//        ByteArrayOutputStream expected = setOut();
-//
-//        ByteArrayOutputStream actual = setOut();
-//
-//        Method task13 = Main.class.getDeclaredMethod("task14");
-//        task13.setAccessible(true);
-//        task13.invoke(new Object());
-//
-//        assertEquals(expected.toString(), actual.toString());
-//
-//        System.setOut(out);
+        assertEquals(expected.toString(), actual.toString());
     }
 
     private List<Car> getTurkmenistanCarsList() {
@@ -119,7 +143,6 @@ class MainTask14Test {
                 .filter(kurgustanCarPredicate.negate())
                 .filter(russianCarPredicate.negate())
                 .filter(mongoliaCarPredicate)
-                .peek(System.out::println)
                 .collect(Collectors.toList());
     }
 

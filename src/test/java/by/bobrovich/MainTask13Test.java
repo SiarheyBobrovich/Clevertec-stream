@@ -35,9 +35,11 @@ class MainTask13Test {
         final List<House> houses = Util.getHouses();
         final LocalDate now = LocalDate.now();
         final LocalDate years18 = now.minusYears(18);
-        final LocalDate years63 = now.minusYears(63).plusDays(1);
+        final LocalDate malePensionYear = now.minusYears(63).plusDays(1);
+        final LocalDate femalePensionYear = now.minusYears(58).plusDays(1);
         final Predicate<Person> isLessThen18 = (p) -> p.getDateOfBirth().isAfter(years18);
-        final Predicate<Person> isMoreThen63 = (p) -> p.getDateOfBirth().isBefore(years63);
+        final Predicate<Person> isMalePensioner = (p) -> "Male".equals(p.getGender()) && p.getDateOfBirth().isBefore(malePensionYear);
+        final Predicate<Person> isFemalePension = (p) -> "Female".equals(p.getGender()) && p.getDateOfBirth().isBefore(femalePensionYear);
 
         List<Person> hospitalPeople = houses.stream()
                 .filter(h -> "Hospital".equals(h.getBuildingType()))
@@ -47,7 +49,7 @@ class MainTask13Test {
         List<Person> yangAndOldPeople = houses.stream()
                 .filter(h -> !"Hospital".equals(h.getBuildingType()))
                 .flatMap(h -> h.getPersonList().stream())
-                .filter(isLessThen18.or(isMoreThen63))
+                .filter(isLessThen18.or(isMalePensioner).or(isFemalePension))
                 .collect(Collectors.toList());
 
         List<Person> otherPeople = houses.stream()

@@ -11,7 +11,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,16 +57,17 @@ class MainTask14Test {
     @Test
     public void task14() throws IOException, NoSuchMethodException, InvocationTargetException {
         BigDecimal cost = new BigDecimal("0.00714");
-        List<Car> turkmenistanCarsList = getTurkmenistanCarsList();
-        List<Car> uzbekistanCarsList = getUzbekistanCarsList();
-        List<Car> kazahstanCarsList = getKazahstanCarsList();
-        List<Car> kurgustanCarsList = getKurgustanCarsList();
-        List<Car> russianCarsList = getRussianCarsList();
-        List<Car> mongoliaCarsList = getMongoliaCarsList();
+        Map<String, List<Car>> countriesMap = new LinkedHashMap<>();
+        countriesMap.put("Туркменистан", getTurkmenistanCarsList());
+        countriesMap.put("Узбекистан", getUzbekistanCarsList());
+        countriesMap.put("Казахстан", getKazahstanCarsList());
+        countriesMap.put("Кыргызстан", getKurgustanCarsList());
+        countriesMap.put("Россия", getRussianCarsList());
+        countriesMap.put("Монголия", getMongoliaCarsList());
 
         ByteArrayOutputStream expected = setOut();
 
-        BigDecimal summaryCost = Stream.of(turkmenistanCarsList, uzbekistanCarsList, kazahstanCarsList, kurgustanCarsList, russianCarsList, mongoliaCarsList)
+        BigDecimal summaryCost = countriesMap.values().stream()
                 .map(list -> list.stream()
                         .mapToInt(Car::getMass)
                         .sum())
@@ -74,7 +77,7 @@ class MainTask14Test {
                 .orElse(BigDecimal.ZERO);
         System.out.println(summaryCost);
 
-        int allPrice = Stream.of(turkmenistanCarsList, uzbekistanCarsList, kazahstanCarsList, kurgustanCarsList, russianCarsList, mongoliaCarsList)
+        int allPrice = countriesMap.values().stream()
                 .flatMap(Collection::stream)
                 .mapToInt(Car::getPrice)
                 .sum();
@@ -89,7 +92,7 @@ class MainTask14Test {
         task14.setAccessible(true);
         try {
             task14.invoke(new Object());
-        } catch (IllegalAccessException e) {
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }finally {
             System.setOut(out);

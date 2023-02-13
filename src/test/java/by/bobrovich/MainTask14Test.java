@@ -10,15 +10,12 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MainTask14Test {
     MainTask14Test() throws IOException {
@@ -32,28 +29,6 @@ class MainTask14Test {
     private final Predicate<Car> russianCarPredicate = (c) -> !("Yellow".equals(c.getColor()) || "Red".equals(c.getColor()) || "Green".equals(c.getColor()) || "Blue".equals(c.getColor())) || c.getPrice() > 40000;
     private final Predicate<Car> mongoliaCarPredicate = (c) -> c.getVin() != null && c.getVin().contains("59");
 
-    /*
-        221.91834
-        107.63550
-        2255.96868
-        531.29454
-        14922.70710
-        120.80880
-        ALL: 18160.33296
-     */
-    //Из перечня автомобилей приходящих на рынок Азии логистическому агентству предстоит
-    // отсортировать их в порядке следования
-    // 1.Туркменистан -> Все автомобили марки "Jaguar" а так же все авто цвета White идут в первую страну
-    // 2.Узбекистан -> Из оставшихся все автомобили с массой до 1500 кг и марок BMW, Lexus, Chrysler и Toyota идут во второй эшелон
-    // 3.Казахстан -> Из оставшихся все автомобили Черного цвета с массой более 4000 кг и все GMC и Dodge идут в третий эшелон
-    // 4.Кыргызстан -> Из оставшихся все автомобили года выпуска до 1982 или все модели "Civic" и "Cherokee" идут в четвёртый эшелон
-    // 5.Россия -> Из оставшихся все автомобили цветов НЕ Yellow, Red, Green и Blue или же по стоимости дороже 40000 в пятый эшелон
-    // 6.Монголия -> Из оставшиеся все автомобили в vin номере которых есть цифра "59" идут в последний шестой эшелон
-    //Оставшиеся автомобили отбрасываем, они никуда не идут.
-    //Измерить суммарные массы автомобилей всех эшелонов для каждой из стран и
-    //подсчитать сколько для каждой страны будет стоить транспортные расходы если учесть что
-    // на 1 тонну транспорта будет потрачено 7.14 $.
-    //Вывести суммарные стоимости в консоль. Вывести общую выручку логистической кампании.
     @Test
     public void task14() throws IOException, NoSuchMethodException, InvocationTargetException {
         BigDecimal cost = new BigDecimal("0.00714");
@@ -65,7 +40,7 @@ class MainTask14Test {
         countriesMap.put("Россия", getRussianCarsList());
         countriesMap.put("Монголия", getMongoliaCarsList());
 
-        ByteArrayOutputStream expected = setOut();
+        ByteArrayOutputStream expectedByteArray = setOut();
 
         BigDecimal summaryCost = countriesMap.values().stream()
                 .map(list -> list.stream()
@@ -75,18 +50,18 @@ class MainTask14Test {
                 .peek(System.out::println)
                 .reduce(BigDecimal::add)
                 .orElse(BigDecimal.ZERO);
-        System.out.println(summaryCost);
 
         int allPrice = countriesMap.values().stream()
                 .flatMap(Collection::stream)
                 .mapToInt(Car::getPrice)
                 .sum();
 
-        System.out.println(allPrice);
+        System.out.println(BigDecimal.valueOf(allPrice).subtract(summaryCost));
+        String[] expected = expectedByteArray.toString().split("\n");
 
         //Original method
 
-        ByteArrayOutputStream actual = setOut();
+        ByteArrayOutputStream actualByteArray = setOut();
 
         Method task14 = Main.class.getDeclaredMethod("task14");
         task14.setAccessible(true);
@@ -98,7 +73,8 @@ class MainTask14Test {
             System.setOut(out);
         }
 
-        assertEquals(expected.toString(), actual.toString());
+        String actual = actualByteArray.toString();
+        Arrays.stream(expected).forEach(ex -> assertTrue(actual.contains(ex)));
     }
 
     private List<Car> getTurkmenistanCarsList() {

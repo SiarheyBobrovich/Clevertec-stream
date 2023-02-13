@@ -26,7 +26,6 @@ public class MainUtil {
     private static final Predicate<Car> isVinContains59 = (c) -> c.getVin().contains("59");
     private static final Predicate<Car> isVinNonNull = (c) -> c.getVin() != null;
 
-    private static final Predicate<Car> mongoliaCarPredicate = (c) -> c.getVin() != null && c.getVin().contains("59");
 
     private MainUtil(){}
 

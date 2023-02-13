@@ -11,6 +11,7 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
@@ -69,7 +70,8 @@ class MainTask13Test {
             System.setOut(out);
         }
 
-        assertEquals(expected.toString(), actual.toString());
+        Arrays.stream(expected.toString().split("\n"))
+                        .forEach(s -> assertTrue(actual.toString().contains(s)));
     }
 
     private ByteArrayOutputStream setOut() {

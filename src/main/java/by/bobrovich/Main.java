@@ -35,6 +35,7 @@ public class Main {
         task13();
         task14();
         task15();
+        task16();
     }
 
     private static void task1() throws IOException {
@@ -231,52 +232,6 @@ public class Main {
                 .reduce(BigDecimal::add)
                 .ifPresent(System.out::println);
 
-
-//        final Predicate<Car> turkmenistanCarPredicate = (c) -> "Jaguar".equals(c.getCarMake()) || "White".equals(c.getColor());
-//        final Predicate<Car> uzbekistanCarPredicate = (c) -> c.getMass() < 1500 && ("BMW".equals(c.getCarMake()) || "Lexus".equals(c.getCarMake()) || "Chrysler".equals(c.getCarMake()) || "Toyota".equals(c.getCarMake()));
-//        final Predicate<Car> kazahstanCarPredicate = (c) -> "GMC".equals(c.getCarMake()) || "Dodge".equals(c.getCarMake()) || ("Red".equals(c.getColor()) && c.getMass() > 4000);
-//        final Predicate<Car> kurgustanCarPredicate = (c) -> "Civic".equals(c.getCarModel()) || "Cherokee".equals(c.getCarModel()) || c.getReleaseYear() < 1982;
-//        final Predicate<Car> russianCarPredicate = (c) -> !("Yellow".equals(c.getColor()) || "Red".equals(c.getColor()) || "Green".equals(c.getColor()) || "Blue".equals(c.getColor())) || c.getPrice() > 40000;
-//        final Predicate<Car> mongoliaCarPredicate = (c) -> c.getVin() != null && c.getVin().contains("59");
-
-//        final Map<String, List<Car>> cuntryMap = new LinkedHashMap<>();
-//        cuntryMap.put("Туркменистан", new ArrayList<>());
-//        cuntryMap.put("Узбекистан", new ArrayList<>());
-//        cuntryMap.put("Казахстан", new ArrayList<>());
-//        cuntryMap.put("Кыргызстан", new ArrayList<>());
-//        cuntryMap.put("Россия", new ArrayList<>());
-//        cuntryMap.put("Монголия", new ArrayList<>());
-
-//        cars.stream()
-//                .peek(car -> {if (turkmenistanCarPredicate.test(car)) cuntryMap.get("Туркменистан").add(car);})
-//                .filter(turkmenistanCarPredicate.negate())
-//                .peek(car -> {if (uzbekistanCarPredicate.test(car)) cuntryMap.get("Узбекистан").add(car);})
-//                .filter(uzbekistanCarPredicate.negate())
-//                .peek(car -> {if (kazahstanCarPredicate.test(car)) cuntryMap.get("Казахстан").add(car);})
-//                .filter(kazahstanCarPredicate.negate())
-//                .peek(car -> {if (kurgustanCarPredicate.test(car)) cuntryMap.get("Кыргызстан").add(car);})
-//                .filter(kurgustanCarPredicate.negate())
-//                .peek(car -> {if (russianCarPredicate.test(car)) cuntryMap.get("Россия").add(car);})
-//                .filter(russianCarPredicate.negate())
-//                .forEach(car -> {if (mongoliaCarPredicate.test(car)) cuntryMap.get("Монголия").add(car);});
-//        List<Integer> countriesCost = new ArrayList<>();
-//
-//        int allPrice = cuntryMap.entrySet().stream()
-//                .peek(entry -> countriesCost.add(entry.getValue().stream()
-//                        .mapToInt(Car::getMass)
-//                        .sum()))
-//                .flatMap(entry -> entry.getValue().stream())
-//                .mapToInt(Car::getPrice)
-//                .sum();
-//
-//        countriesCost.stream()
-//                .map(BigDecimal::valueOf)
-//                .map(b -> b.multiply(BigDecimal.valueOf(0.001)))
-//                .peek(c -> System.out.println(cost.multiply(c)))
-//                .reduce(BigDecimal::add)
-//                .ifPresent(x -> System.out.println(cost.multiply(x)));
-//
-//        System.out.println(allPrice);
     }
 
     private static void task15() throws IOException {
@@ -302,5 +257,50 @@ public class Main {
                         .add(BigDecimal.valueOf(f.getPrice())))
                 .reduce(BigDecimal::add)
                 .ifPresent(System.out::println);
+    }
+
+    private static void task16() throws IOException {
+        List<Animal> animals = Util.getAnimals();
+        List<Animal> uniqueYangAnimals = animals.stream()
+                .collect(Collectors.groupingBy(Animal::getBread, Collectors.toList()))
+                .values().stream()
+                .map(list -> {
+                    list.sort(Comparator.comparingInt(Animal::getAge));
+                    return list.get(0);
+                })
+                .filter(a -> "Male".equals(a.getGender()) || "Female".equals(a.getGender()))
+                .toList();
+
+        List<Animal> uniquePairs = Stream.concat(uniqueYangAnimals.stream(), uniqueYangAnimals.stream()
+                        .map(a -> new Animal(
+                                "Male".equals(a.getGender()) ? 0 : a.getId(),
+                                a.getBread(),
+                                a.getAge(),
+                                a.getOrigin(),
+                                "Male".equals(a.getGender()) ? "Female" : "Male")
+                        ).toList().stream())
+                .sorted(Comparator.comparing(Animal::getBread)
+                        .thenComparing(Animal::getAge).reversed())
+                .toList();
+
+        System.out.println(uniquePairs.size() / 2);
+
+        long shipHold = animals.stream()
+                .filter(uniqueYangAnimals::contains)
+                .count();
+
+        System.out.println(BigDecimal.valueOf(0.25).multiply(BigDecimal.valueOf(shipHold)));
+
+        BigDecimal container = uniquePairs.stream()
+                .map(a -> "Male".equals(a.getGender()) ? BigDecimal.valueOf(1.5) : BigDecimal.valueOf(1))
+                .reduce(BigDecimal::add)
+                .orElse(BigDecimal.ZERO);
+
+        Util.getFlowers().stream()
+                .sorted(Comparator.comparing(Flower::getWaterConsumptionPerDay))
+                .limit(uniquePairs.size() / 4)
+                .map(a -> BigDecimal.valueOf(a.getWaterConsumptionPerDay()))
+                .reduce(BigDecimal::add)
+                .ifPresent(w -> System.out.println(container.add(w).multiply(BigDecimal.valueOf(1.25))));
     }
 }

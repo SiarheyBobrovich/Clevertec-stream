@@ -14,7 +14,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -248,7 +247,10 @@ public class Main {
                 .sorted(Comparator.comparing(Flower::getOrigin).reversed()
                         .thenComparing(Flower::getPrice)
                         .thenComparing(Comparator.comparing(Flower::getWaterConsumptionPerDay).reversed()))
-                .filter(f -> Pattern.compile("^[D-S]").asPredicate().test(f.getCommonName()))
+                .filter(f -> !Objects.isNull(f.getCommonName()))
+                .filter(f -> !f.getCommonName().isEmpty())
+                .filter(f -> f.getCommonName().charAt(0) <= 'S')
+                .filter(f -> f.getCommonName().charAt(0) > 'C')
                 .filter(Flower::isShadePreferred)
                 .filter(f -> f.getFlowerVaseMaterial().stream()
                         .anyMatch(vaseMaterialSet::contains))
